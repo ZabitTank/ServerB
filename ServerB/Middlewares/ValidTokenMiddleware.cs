@@ -31,6 +31,17 @@ namespace ServerB.Middlewares
                 await context.Response.WriteAsync("Request send time was not provided");
                 return;
             }
+
+            TimeSpan timeSpan = DateTime.UtcNow - new DateTime(1970, 01, 01, 0, 0, 0, 0, DateTimeKind.Utc);
+            UInt64 requestTimeStamp = Convert.ToUInt64(timeSpan.TotalMinutes);
+
+            if(requestTimeStamp - Convert.ToUInt64(extractedTime) > 1)
+            {
+                context.Response.StatusCode = 408;
+                await context.Response.WriteAsync("Request timeout");
+                return;
+            }
+
             var appSettings = context.RequestServices.GetRequiredService<IConfiguration>();
             var secretKey = appSettings.GetValue<string>(SECRET_KEY);
 
